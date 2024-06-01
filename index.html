@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Text</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            border-radius: 10px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 5px;
+        }
+        #start-btn {
+            background-color: #4CAF50;
+        }
+        #start-btn:hover {
+            background-color: #45a049;
+        }
+        #stop-btn {
+            background-color: #f44336;
+        }
+        #stop-btn:hover {
+            background-color: #e53935;
+        }
+        textarea {
+            margin-top: 20px;
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Speech to Text Recognition</h1>
+        <button id="start-btn">Start Speaking</button>
+        <button id="stop-btn">Stop Listening</button>
+        <textarea id="text-output" placeholder="Your speech will appear here..."></textarea>
+    </div>
+
+    <script>
+        let recognition;
+        let finalTranscript = '';
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            // Check if the browser supports the Web Speech API
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+
+                recognition.continuous = true; // Keep recognizing as long as the user is speaking
+                recognition.interimResults = true; // Show interim results
+
+                recognition.onstart = () => {
+                    console.log('Speech recognition started');
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                };
+
+                recognition.onend = () => {
+                    console.log('Speech recognition ended');
+
+                    // Copy the full transcript to the clipboard after 1.5 seconds
+                    setTimeout(() => {
+                        navigator.clipboard.writeText(finalTranscript).then(() => {
+                            console.log('Text copied to clipboard');
+                        }).catch(err => {
+                            console.error('Error copying text to clipboard:', err);
+                        });
+                    }, 1500);
+                };
+
+                recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    for (let i = 0; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+
+                    const fullTranscript = finalTranscript + '\n' + interimTranscript;
+                    document.getElementById('text-output').value = fullTranscript;
+                };
+
+                recognition.start();
+            } else {
+                alert('Speech recognition is not supported in this browser.');
+            }
+        });
+
+        document.getElementById('stop-btn').addEventListener('click', () => {
+            if (recognition) {
+                recognition.stop();
+            }
+        });
+    </script>
+</body>
+</html>
