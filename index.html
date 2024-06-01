@@ -73,7 +73,6 @@
 
     <script>
         let recognition;
-        let finalTranscript = '';
 
         document.getElementById('start-btn').addEventListener('click', () => {
             // Check if the browser supports the Web Speech API
@@ -93,18 +92,11 @@
 
                 recognition.onend = () => {
                     console.log('Speech recognition ended');
-
-                    // Copy the full transcript to the clipboard after 1.5 seconds
-                    setTimeout(() => {
-                        navigator.clipboard.writeText(finalTranscript).then(() => {
-                            console.log('Text copied to clipboard');
-                        }).catch(err => {
-                            console.error('Error copying text to clipboard:', err);
-                        });
-                    }, 1500);
                 };
 
                 recognition.onresult = (event) => {
+
+                    let finalTranscript = '';
                     let interimTranscript = '';
                     for (let i = 0; i < event.results.length; i++) {
                         const transcript = event.results[i][0].transcript;
@@ -117,6 +109,15 @@
 
                     const fullTranscript = finalTranscript + '\n' + interimTranscript;
                     document.getElementById('text-output').value = fullTranscript;
+
+                    // Copy the full transcript to the clipboard after 1.7 seconds
+                    setTimeout(() => {
+                        navigator.clipboard.writeText(fullTranscript).then(() => {
+                            console.log('Text copied to clipboard');
+                        }).catch(err => {
+                            console.error('Error copying text to clipboard:', err);
+                        });
+                    }, 1700);
                 };
 
                 recognition.start();
@@ -133,3 +134,4 @@
     </script>
 </body>
 </html>
+
